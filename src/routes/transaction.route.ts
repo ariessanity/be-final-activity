@@ -23,6 +23,16 @@ TransactionRouter.get("/get-all-transaction", async (req: Request, res: Response
   }
 });
 
+TransactionRouter.get("/get-all-transaction-status", async (req: Request, res: Response) => {
+  let response = await TransactionController.getAllTransactionStatus();
+  return res.status(response.status).send(response);
+});
+
+TransactionRouter.post("/get-all-transaction-with-date", async (req: Request, res: Response) => {
+  let response = await TransactionController.getAllTransactionWithDate(req.query);
+  return res.status(response.status).send(response);
+});
+
 TransactionRouter.put("/update-transaction", async (req: Request, res: Response) => {
   let authenticate: any = await AuthService.verify(req.headers["authorization"]);
   if (authenticate.status == 200) {

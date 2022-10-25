@@ -1,4 +1,4 @@
-import { Table, Column, DataType, Model, ForeignKey, PrimaryKey, AutoIncrement, BelongsToMany } from "sequelize-typescript";
+import { Table, Column, DataType, Model, ForeignKey, PrimaryKey, AutoIncrement, BelongsToMany, BelongsTo } from "sequelize-typescript";
 import User from "./User";
 import Product from "./Product";
 import Shop from "./Shop";

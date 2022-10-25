@@ -25,13 +25,13 @@ class UserService extends CommonResponse {
         let passwordConfirm: boolean = await bcrypt.compare(dto.password.toString(), exist["dataValues"].password);
 
         if (passwordConfirm == true) {
-          let token = await AuthService.auth(exist["dataValues"]);
-          return this.RESPONSE(OK, token.response, OK_MESSAGE);
+          let { response } = await AuthService.auth(exist["dataValues"]);
+          return this.RESPONSE(OK, { response, username: dto.username }, OK_MESSAGE);
         } else {
           return this.RESPONSE(BADREQUEST, {}, BADREQUEST_MESSAGE);
         }
       } else {
-        return this.RESPONSE(BADREQUEST, {}, BADREQUEST_MESSAGE);
+        // return this.RESPONSE(BADREQUEST, {}, BADREQUEST_MESSAGE);
       }
     } catch (error) {
       return this.RESPONSE(INTERNAL_SERVER_ERROR, error, INTERNAL_SERVER_ERROR_MESSAGE);
@@ -93,7 +93,13 @@ class UserService extends CommonResponse {
   //GET ONE USER
   async getOneUser(dto: UserTypes) {
     try {
-      let exist = await User.findOne({ where: { id: dto } });
+      let exist = await User.findOne({
+        where: { id: dto },
+        include: {
+          model: Cart,
+          as: "cart_items",
+        },
+      });
       if (exist != null) {
         return this.RESPONSE(OK, exist, OK_MESSAGE);
       } else {

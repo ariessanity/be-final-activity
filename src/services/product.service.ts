@@ -3,12 +3,18 @@ import ProductTypes from "../models/dto/productDTO";
 import CommonResponse from "../utils/response.utils";
 import { OK, NOTFOUND, BADREQUEST, INTERNAL_SERVER_ERROR } from "../utils/constants.utils";
 import { OK_MESSAGE, NOTFOUND_MESSAGE, BADREQUEST_MESSAGE, INTERNAL_SERVER_ERROR_MESSAGE } from "../utils/message.utils";
+import Cart from "../models/tables/Cart";
 
 class ProductService extends CommonResponse {
   //GET ALL Product
   async getAllProduct() {
     try {
-      let exist = await Product.findAll();
+      let exist = await Product.findAll({
+        include: {
+          model: Cart,
+          as: "cart",
+        },
+      });
 
       if (exist.length != 0) {
         return this.RESPONSE(OK, exist, OK_MESSAGE);

@@ -8,6 +8,8 @@ import CommonResponse from "../utils/response.utils";
 import { OK, NOTFOUND, BADREQUEST, INTERNAL_SERVER_ERROR } from "../utils/constants.utils";
 import { OK_MESSAGE, NOTFOUND_MESSAGE, BADREQUEST_MESSAGE, INTERNAL_SERVER_ERROR_MESSAGE } from "../utils/message.utils";
 import User from "../models/tables/User";
+import { Op } from "sequelize";
+import moment from "moment-timezone";
 
 class TransactionService extends CommonResponse {
   //Checkout
@@ -82,6 +84,45 @@ class TransactionService extends CommonResponse {
     }
   }
 
+  //GET ALL Transaction With Date
+  async getAllTransactionWithDate(from: any, to: any) {
+    try {
+      var dateFrom = await moment.tz(from, "YYYY-MM-DD", "Asia/Manila").format();
+      var dateTo = await moment.tz(to, "YYYY-MM-DD", "Asia/Manila").format();
+
+      console.log(dateFrom);
+
+      if (from == 0 && to == 0) {
+        let exist = await Transaction.findAll();
+        if (exist.length != 0) {
+          return this.RESPONSE(OK, exist, OK_MESSAGE);
+        } else {
+          return this.RESPONSE(NOTFOUND, [], NOTFOUND_MESSAGE);
+        }
+      } else if (dateFrom == dateTo) {
+        let exist = await Transaction.findAll({
+          where: { transaction_date: from || to },
+        });
+        if (exist.length != 0) {
+          return this.RESPONSE(OK, exist, OK_MESSAGE);
+        } else {
+          return this.RESPONSE(NOTFOUND, [], NOTFOUND_MESSAGE);
+        }
+      } else {
+        let exist = await Transaction.findAll({
+          where: { transaction_date: { [Op.and]: { [Op.lte]: dateTo, [Op.gte]: dateFrom } } },
+        });
+        if (exist.length != 0) {
+          return this.RESPONSE(OK, exist, OK_MESSAGE);
+        } else {
+          return this.RESPONSE(NOTFOUND, [], NOTFOUND_MESSAGE);
+        }
+      }
+    } catch (error) {
+      return this.RESPONSE(INTERNAL_SERVER_ERROR, error, INTERNAL_SERVER_ERROR_MESSAGE);
+    }
+  }
+
   //UPDATE Transaction
   async updateTransaction(dto: TransactionTypes) {
     try {
@@ -117,6 +158,37 @@ class TransactionService extends CommonResponse {
       } else {
         return this.RESPONSE(BADREQUEST, {}, BADREQUEST_MESSAGE);
       }
+    } catch (error) {
+      return this.RESPONSE(INTERNAL_SERVER_ERROR, error, INTERNAL_SERVER_ERROR_MESSAGE);
+    }
+  }
+
+  async getAllTransactionStatus() {
+    try {
+      let totalPrice = await Transaction.sum("total_price", { where: { transaction_status: 3 } });
+      let totalTransaction = await Transaction.count();
+      let successfulTransaction = await Transaction.count({ where: { transaction_status: 3 } });
+      let failedTransaction = await Transaction.count({ where: { transaction_status: { [Op.or]: [1, 2, 4] } } }); //1- Active 2-Ongoing 4-Failed
+
+      let averageTransactionPerDay = totalTransaction / 365;
+      let ratioOfSuccess = (successfulTransaction / totalTransaction) * 100;
+      let ratioOfFailed = (failedTransaction / totalTransaction) * 100;
+      let ratio = failedTransaction / successfulTransaction;
+
+      return this.RESPONSE(
+        OK,
+        {
+          total_price: totalPrice,
+          average_transaction_per_day: +averageTransactionPerDay.toFixed(2),
+          total_transaction: totalTransaction,
+          successfull_transaction: successfulTransaction,
+          failed_transaction: failedTransaction,
+          ratio_success: +ratioOfSuccess.toFixed(2),
+          ratio_failed: +ratioOfFailed.toFixed(2),
+          ratio: +ratio.toFixed(2),
+        },
+        OK_MESSAGE
+      );
     } catch (error) {
       return this.RESPONSE(INTERNAL_SERVER_ERROR, error, INTERNAL_SERVER_ERROR_MESSAGE);
     }

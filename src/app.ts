@@ -1,6 +1,7 @@
 import dotenv, { DotenvConfigOutput } from "dotenv";
 import config from "./config/config";
 import express, { Application, Request, Response, json } from "express";
+import cors from "cors";
 const app: Application = express();
 
 const env_config: DotenvConfigOutput = dotenv.config();
@@ -16,6 +17,7 @@ import TransactionOrderRouter from "./routes/transaction-order.route";
 
 //Middleware
 app.use(json());
+app.use(cors());
 
 //Routes
 app.use(UserRouter);

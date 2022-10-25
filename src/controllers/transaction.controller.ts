@@ -11,6 +11,13 @@ class TransactionController {
     return response;
   }
 
+  async getAllTransactionWithDate(req: any) {
+    let from = req.from !== null || req.from != undefined ? req.from : 0;
+    let to = req.to !== null || req.to != undefined ? req.to : 0;
+    let response = await TransactionService.getAllTransactionWithDate(from, to);
+    return response;
+  }
+
   async updateTransaction(req: any) {
     let response = await TransactionService.updateTransaction(req);
     return response;
@@ -18,6 +25,11 @@ class TransactionController {
 
   async deleteTransaction(req: any) {
     let response = await TransactionService.deleteTransaction(req);
+    return response;
+  }
+
+  async getAllTransactionStatus() {
+    let response = await TransactionService.getAllTransactionStatus();
     return response;
   }
 }

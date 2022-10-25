@@ -16,7 +16,7 @@ class AuthService extends CommonResponse {
       if (authentication != null) {
         return this.RESPONSE(OK, { accessToken: authentication }, OK_MESSAGE);
       } else {
-        return this.RESPONSE(BADREQUEST, [], BADREQUEST_MESSAGE);
+        return this.RESPONSE(BADREQUEST, {}, BADREQUEST_MESSAGE);
       }
     } catch (error) {
       return this.RESPONSE(INTERNAL_SERVER_ERROR, error, INTERNAL_SERVER_ERROR_MESSAGE);
@@ -28,6 +28,8 @@ class AuthService extends CommonResponse {
     try {
       if (token != null) {
         var getToken = token.split(" ")[1];
+      } else {
+        return this.RESPONSE(BADREQUEST, {}, BADREQUEST_MESSAGE);
       }
       if (getToken != null) {
         let authentication = await jwt.verify(getToken, SECRET);
